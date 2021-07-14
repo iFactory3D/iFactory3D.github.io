@@ -1,0 +1,172 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+</head>
+<body>
+    <form>
+        <input type="text" id="ipaddress" value="" />
+        <input type="button" id="btn" value="GO" />
+    </form>
+
+    <div id="time"></div>
+    <div id="image"></div>
+    <div id="printerguard"></div>
+
+    <script type="text/javascript">
+        var img_id = "image";
+        
+        function toDataURL(src, callback, outputFormat) {
+            var img = new Image();
+            var dataURL;
+            img.crossOrigin = 'Anonymous';
+            img.onload = function () {
+                var canvas = document.createElement('CANVAS');
+                var ctx = canvas.getContext('2d');
+                
+                canvas.height = this.naturalHeight;
+                canvas.width = this.naturalWidth;
+                ctx.drawImage(this, 0, 0);
+                dataURL = canvas.toDataURL(outputFormat);
+                callback(dataURL);
+                //var dataURL = canvas.toDataURL("image/png");
+
+                //return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+            };
+            img.src = src;
+            if (img.complete || img.complete === undefined) {
+                img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+                img.src = src;
+            }
+            return dataURL;
+        }
+        
+        function postData(url, body) {
+            var http = new XMLHttpRequest;
+            http.open("POST", url, true);
+            http.setRequestHeader('Content-Type', 'text/xml');
+            http.setRequestHeader('Access-Control-Allow-Credentials', 'true');
+            http.withCredentials = 'true';
+            http.onreadystatechange = function () {
+                if (http.readyState == 4) {
+                    console.log("response 4: " + http.responseText);
+                } else {
+                    console.log("state " + http.readyState);
+                }
+            }
+            http.send(body);
+            
+           // var pg_error =  fetch(url, {
+           //     credentials: 'include'
+           // })
+
+            return pg_error
+        }
+        function clearimage() {
+            var elem_image = document.getElementById(img_id);
+            if (!elem_image) {
+                console.log("No element for id:" + img_id);
+            } else {
+                elem_image.innerHTML = "";
+                console.log("Cleared old image");
+            }
+        }
+
+
+        document.getElementById('btn').onclick = function () {
+
+            var val = document.getElementById('ipaddress').value,
+            src = "http://" + val + ":8080/?action=snapshot"
+
+            img = document.createElement('img');
+
+            img.src = src;
+            document.getElementById(img_id).appendChild(img);
+
+            setInterval(function () {
+                myFunction()
+            }, 10000)
+        }
+        // Example POST method implementation:
+        async function postData(url = '', data = {}) {
+            // Default options are marked with *
+            const response = await fetch(url, {
+                method: 'POST', // *GET, POST, PUT, DELETE, etc.
+                mode: 'cors', // no-cors, *cors, same-origin
+                cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: 'same-origin', // include, *same-origin, omit
+                headers: {
+                    'Content-Type': 'application/json'
+                    // 'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                redirect: 'follow', // manual, *follow, error
+                referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+                body: JSON.stringify(data) // body data type must match "Content-Type" header
+            });
+            const data_ret = await response.json();
+            console.log("error: ",data_ret);
+            var pg_div = document.getElementById('printerguard');
+            pg_div.innerHTML = "";
+            pg_div.innerHTML += data_ret + "<br>";
+            return data_ret;
+            
+            //return response.json(); // parses JSON response into native JavaScript objects
+        };
+            
+        function myFunction() {
+            console.log('myFunction Called');
+            clearimage();
+            var val = document.getElementById('ipaddress').value,
+            src = "http://" + val + ":8080/?action=snapshot"
+
+            img = document.createElement('img');
+
+            img.src = src;
+            document.getElementById(img_id).appendChild(img);
+
+
+            
+            var dataUrl = "";
+            var data = "";
+            data = toDataURL(
+              src,
+              function (dataUrl) {
+                  //data = dataUrl.replace('data:image/png;base64,','')
+                  console.log('RESULT:', dataUrl.replace('data:image/png;base64,','website:'))
+                  awsPostURL = "http://Dockertestpg7-env.eba-urvdenaw.eu-central-1.elasticbeanstalk.com/getentities"
+                  awsPostURL = "http://35.157.8.213/getentities"
+                  postData(awsPostURL, dataUrl.replace('data:image/png;base64,','website:'));
+              }
+            )
+            
+            
+            console.log("RESULT: ",data)
+            //encodedData = btoa(data);
+
+            /*
+            postData('http://Dockertestpg7-env.eba-urvdenaw.eu-central-1.elasticbeanstalk.com/getentities', { 'image': dataUrl })
+              .then(data => {
+                  console.log(data); // JSON data parsed by `data.json()` call
+              });
+            var pg_div = document.getElementById('printerguard');
+            pg_div.innerHTML = "";
+            pg_div.innerHTML += data + "<br>";
+            //var timerId = setInterval(countdown, 1000);
+            //clearTimeout(timerId);
+            
+            get image in encoded form
+            
+            var dataUrl = "";
+            toDataURL(
+              src,
+              function (dataUrl) {
+                  console.log('RESULT:', dataUrl)
+              }
+            )
+            */
+
+        }
+    </script>
+</body>
+</html>
